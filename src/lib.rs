@@ -38,7 +38,7 @@ use bevy_ecs::system::SystemParam;
 use bevy_render::prelude::*;
 use bevy_render::render_graph::RenderGraph;
 use bevy_render::renderer::{RenderAdapter, RenderDevice, RenderQueue, render_system};
-use bevy_render::{Render, RenderApp, RenderSet};
+use bevy_render::{Render, RenderApp, RenderSystems};
 use bevy_winit::WakeUp;
 use cfg_if::cfg_if;
 use iced_core::Theme;
@@ -141,7 +141,7 @@ impl<M: Event, U: RedrawRequestVariant> Plugin for IcedPlugin<M, U> {
                 Render,
                 render::recall_staging_belt
                     .after(render_system)
-                    .in_set(RenderSet::Render),
+                    .in_set(RenderSystems::Render),
             );
         cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
