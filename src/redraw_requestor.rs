@@ -35,6 +35,7 @@ impl From<State> for IcedRedrawRequest {
             State::Updated {
                 redraw_request,
                 input_method: _,
+                mouse_interaction: _,
             } => Self(redraw_request),
             State::Outdated => Self(RedrawRequest::Wait),
         }
