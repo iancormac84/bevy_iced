@@ -16,7 +16,7 @@ use rand::random as rng;
 const NOTOSANS_REGULAR: iced::Font = iced::Font::with_name("Noto Sans");
 const NOTOSANS_REGULAR_BYTES: &[u8] = include_bytes!("../assets/fonts/NotoSans-Regular.ttf");
 
-#[derive(Clone, Event)]
+#[derive(Clone, Event, BufferedEvent)]
 enum UiMessage {
     BoxRequested,
     Scale(f32),

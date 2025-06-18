@@ -5,7 +5,7 @@
 //! use bevy_iced::iced::widget::text;
 //! use bevy_iced::{IcedContext, IcedPlugin};
 //!
-//! #[derive(Event)]
+//! #[derive(Event, BufferedEvent)]
 //! pub enum UiMessage {}
 //!
 //! pub fn main() {
@@ -104,7 +104,7 @@ impl<Message, WinitUserEvent> IcedPlugin<Message, WinitUserEvent> {
     }
 }
 
-impl<M: Event, U: RedrawRequestVariant> Plugin for IcedPlugin<M, U> {
+impl<M: Event + BufferedEvent, U: RedrawRequestVariant> Plugin for IcedPlugin<M, U> {
     fn build(&self, app: &mut App) {
         app.add_plugins(ExtractComponentPlugin::<IcedCamera>::default())
             .add_systems(
@@ -308,7 +308,7 @@ pub(crate) struct DidDraw(std::sync::atomic::AtomicBool);
 #[derive(SystemParam)]
 pub struct IcedContext<'w, 's, Message, WinitUserEvent = WakeUp>
 where
-    Message: bevy_ecs::event::Event,
+    Message: bevy_ecs::event::Event + bevy_ecs::event::BufferedEvent,
     WinitUserEvent: RedrawRequestVariant,
 {
     viewport: Res<'w, IcedViewport>,
@@ -326,7 +326,7 @@ where
 
 impl<M, U> IcedContext<'_, '_, M, U>
 where
-    M: bevy_ecs::event::Event,
+    M: bevy_ecs::event::Event + bevy_ecs::event::BufferedEvent,
     U: RedrawRequestVariant,
 {
     /// Display an [`Element`] to the screen.

@@ -69,7 +69,7 @@ impl ViewNode for IcedPass {
         &self,
         _graph: &mut RenderGraphContext,
         render_context: &mut RenderContext<'w>,
-        (target, is_iced): QueryItem<'w, Self::ViewQuery>,
+        (target, is_iced): QueryItem<'w, '_, Self::ViewQuery>,
         world: &'w World,
     ) -> Result<(), NodeRunError> {
         if !is_iced {

@@ -152,7 +152,7 @@ pub fn process_input(
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct IcedCursor(Cursor);
 
-pub fn iced_update<M: bevy_ecs::event::Event>(
+pub fn iced_update<M: bevy_ecs::event::Event + bevy_ecs::event::BufferedEvent>(
     (viewport, windows): (Res<IcedViewport>, Query<&mut Window, With<PrimaryWindow>>),
     #[cfg(target_arch = "wasm32")] props: NonSend<IcedResource>,
     #[cfg(not(target_arch = "wasm32"))] props: Res<IcedResource>,
