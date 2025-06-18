@@ -1,3 +1,4 @@
+use bevy_core_pipeline::core_2d::Camera2d;
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::SystemParam;
@@ -8,6 +9,8 @@ use bevy_input::{
     keyboard::KeyboardInput,
     mouse::{MouseButtonInput, MouseWheel},
 };
+use bevy_render::camera::Camera;
+use bevy_render::extract_component::ExtractComponent;
 use bevy_window::prelude::*;
 use bevy_window::{PrimaryWindow, WindowFocused};
 use iced_core::window::Event as IcedWindowEvent;
@@ -19,7 +22,8 @@ use iced_runtime::UserInterface;
 
 use crate::redraw_requestor::IcedRedrawRequest;
 use crate::{
-    IcedProps, Renderer, conversions, iced_resource::IcedResource, render::IcedViewport, utils,
+    IcedProps, IcedSettings, Renderer, conversions, iced_resource::IcedResource,
+    render::IcedViewport, utils,
 };
 
 #[derive(Resource, Deref, DerefMut, Default)]
@@ -148,7 +152,7 @@ pub fn process_input(
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct IcedCursor(Cursor);
 
-pub fn iced_update<M: bevy_ecs::event::Event>(
+pub fn iced_update<M: bevy_ecs::event::Event + bevy_ecs::event::BufferedEvent>(
     (viewport, windows): (Res<IcedViewport>, Query<&mut Window, With<PrimaryWindow>>),
     #[cfg(target_arch = "wasm32")] props: NonSend<IcedResource>,
     #[cfg(not(target_arch = "wasm32"))] props: Res<IcedResource>,
@@ -186,4 +190,20 @@ pub fn iced_update<M: bevy_ecs::event::Event>(
     events.clear();
     iced_redraw_request.update(state);
     message_writer.write_batch(messages);
+}
+
+/// Marker component to differentiate between normal 2D cameras and the iced camera.
+#[derive(Default, Component, ExtractComponent, Copy, Clone)]
+pub struct IcedCamera;
+
+/// Spawns a 2D camera, which serves as the render target for iced.
+pub fn setup_iced_camera(mut commands: Commands, settings: Res<IcedSettings>) {
+    commands.spawn((
+        Camera {
+            order: settings.camera_order,
+            ..Default::default()
+        },
+        Camera2d,
+        IcedCamera,
+    ));
 }
