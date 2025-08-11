@@ -17,12 +17,13 @@ smol = ["dep:async-io"]
 
 [dependencies]
 bevy_app = { git = "https://github.com/bevyengine/bevy.git" }
+bevy_camera = { git = "https://github.com/bevyengine/bevy.git" }
+bevy_core_pipeline = { git = "https://github.com/bevyengine/bevy.git" }
 bevy_derive = { git = "https://github.com/bevyengine/bevy.git" }
 bevy_ecs = { git = "https://github.com/bevyengine/bevy.git" }
 bevy_input = { git = "https://github.com/bevyengine/bevy.git" }
 bevy_math = { git = "https://github.com/bevyengine/bevy.git" }
 bevy_render = { git = "https://github.com/bevyengine/bevy.git" }
-bevy_core_pipeline = { git = "https://github.com/bevyengine/bevy.git" }
 bevy_tasks = { git = "https://github.com/bevyengine/bevy.git" }
 bevy_window = { git = "https://github.com/bevyengine/bevy.git" }
 bevy_winit = { git = "https://github.com/bevyengine/bevy.git" }

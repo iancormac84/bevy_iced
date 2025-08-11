@@ -37,7 +37,7 @@ use bevy_ecs::prelude::*;
 use bevy_ecs::system::SystemParam;
 use bevy_render::extract_component::ExtractComponentPlugin;
 use bevy_render::prelude::*;
-use bevy_render::render_graph::{RenderGraphApp, ViewNodeRunner};
+use bevy_render::render_graph::{RenderGraphExt, ViewNodeRunner};
 use bevy_render::renderer::{RenderAdapter, RenderDevice, RenderQueue, render_system};
 use bevy_render::{Render, RenderApp, RenderSystems};
 use bevy_winit::WakeUp;

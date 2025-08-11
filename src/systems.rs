@@ -1,4 +1,4 @@
-use bevy_core_pipeline::core_2d::Camera2d;
+use bevy_camera::{Camera, Camera2d};
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::SystemParam;
@@ -9,7 +9,6 @@ use bevy_input::{
     keyboard::KeyboardInput,
     mouse::{MouseButtonInput, MouseWheel},
 };
-use bevy_render::camera::Camera;
 use bevy_render::extract_component::ExtractComponent;
 use bevy_window::prelude::*;
 use bevy_window::{PrimaryWindow, WindowFocused};
