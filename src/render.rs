@@ -28,9 +28,11 @@ pub fn update_viewport(
     mut commands: Commands,
 ) {
     let window = windows.single().unwrap();
-    let scale_factor = iced_settings
-        .scale_factor
-        .unwrap_or_else(|| window.scale_factor().into());
+    let scale_factor = if let Some(scale_factor) = iced_settings.scale_factor {
+        scale_factor as f32
+    } else {
+        window.scale_factor()
+    };
     let viewport = Viewport::with_physical_size(
         Size::new(window.physical_width(), window.physical_height()),
         scale_factor,
