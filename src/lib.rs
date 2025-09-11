@@ -5,7 +5,7 @@
 //! use bevy_iced::iced::widget::text;
 //! use bevy_iced::{IcedContext, IcedPlugin};
 //!
-//! #[derive(Event, BufferedEvent)]
+//! #[derive(Event, Message)]
 //! pub enum UiMessage {}
 //!
 //! pub fn main() {
@@ -104,7 +104,7 @@ impl<Message, WinitUserEvent> IcedPlugin<Message, WinitUserEvent> {
     }
 }
 
-impl<M: Event + BufferedEvent, U: RedrawRequestVariant> Plugin for IcedPlugin<M, U> {
+impl<M: Event + Message, U: RedrawRequestVariant> Plugin for IcedPlugin<M, U> {
     fn build(&self, app: &mut App) {
         app.add_plugins(ExtractComponentPlugin::<IcedCamera>::default())
             .add_systems(
@@ -245,7 +245,7 @@ mod iced_resource {
     pub struct IcedResource(Arc<Mutex<IcedProps>>);
 
     impl IcedResource {
-        pub fn lock(&self) -> MutexGuard<IcedProps> {
+        pub fn lock(&'_ self) -> MutexGuard<'_, IcedProps> {
             self.0.lock().unwrap()
         }
     }
@@ -308,7 +308,7 @@ pub(crate) struct DidDraw(std::sync::atomic::AtomicBool);
 #[derive(SystemParam)]
 pub struct IcedContext<'w, 's, Message, WinitUserEvent = WakeUp>
 where
-    Message: bevy_ecs::event::Event + bevy_ecs::event::BufferedEvent,
+    Message: bevy_ecs::event::Event + bevy_ecs::message::Message,
     WinitUserEvent: RedrawRequestVariant,
 {
     viewport: Res<'w, IcedViewport>,
@@ -320,13 +320,13 @@ where
     did_draw: ResMut<'w, DidDraw>,
     ui: NonSendMut<'w, Option<UserInterface<'static, Message, Theme, Renderer>>>,
     cursor: Res<'w, IcedCursor>,
-    message_writer: EventWriter<'w, Message>,
+    message_writer: MessageWriter<'w, Message>,
     redraw_requestor: RedrawRequestor<'w, 's, WinitUserEvent>,
 }
 
 impl<M, U> IcedContext<'_, '_, M, U>
 where
-    M: bevy_ecs::event::Event + bevy_ecs::event::BufferedEvent,
+    M: bevy_ecs::event::Event + bevy_ecs::message::Message,
     U: RedrawRequestVariant,
 {
     /// Display an [`Element`] to the screen.

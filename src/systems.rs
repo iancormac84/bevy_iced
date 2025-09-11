@@ -30,14 +30,14 @@ pub struct IcedEventQueue(Vec<iced_core::Event>);
 
 #[derive(SystemParam)]
 pub struct InputEvents<'w, 's> {
-    cursor_entered: EventReader<'w, 's, CursorEntered>,
-    cursor_left: EventReader<'w, 's, CursorLeft>,
-    cursor: EventReader<'w, 's, CursorMoved>,
-    mouse_button: EventReader<'w, 's, MouseButtonInput>,
-    mouse_wheel: EventReader<'w, 's, MouseWheel>,
-    keyboard_input: EventReader<'w, 's, KeyboardInput>,
-    touch_input: EventReader<'w, 's, TouchInput>,
-    window_focused: EventReader<'w, 's, WindowFocused>,
+    cursor_entered: MessageReader<'w, 's, CursorEntered>,
+    cursor_left: MessageReader<'w, 's, CursorLeft>,
+    cursor: MessageReader<'w, 's, CursorMoved>,
+    mouse_button: MessageReader<'w, 's, MouseButtonInput>,
+    mouse_wheel: MessageReader<'w, 's, MouseWheel>,
+    keyboard_input: MessageReader<'w, 's, KeyboardInput>,
+    touch_input: MessageReader<'w, 's, TouchInput>,
+    window_focused: MessageReader<'w, 's, WindowFocused>,
 }
 
 fn compute_modifiers(input_map: &ButtonInput<KeyCode>) -> keyboard::Modifiers {
@@ -151,13 +151,13 @@ pub fn process_input(
 #[derive(Resource, Deref, DerefMut, Default)]
 pub struct IcedCursor(Cursor);
 
-pub fn iced_update<M: bevy_ecs::event::Event + bevy_ecs::event::BufferedEvent>(
+pub fn iced_update<M: bevy_ecs::event::Event + Message>(
     (viewport, windows): (Res<IcedViewport>, Query<&mut Window, With<PrimaryWindow>>),
     #[cfg(target_arch = "wasm32")] props: NonSend<IcedResource>,
     #[cfg(not(target_arch = "wasm32"))] props: Res<IcedResource>,
     (mut events, touches): (ResMut<IcedEventQueue>, Res<Touches>),
     mut ui: NonSendMut<Option<UserInterface<'static, M, Theme, Renderer>>>,
-    mut message_writer: EventWriter<M>,
+    mut message_writer: MessageWriter<M>,
     mut cursor: ResMut<IcedCursor>,
     mut iced_redraw_request: ResMut<IcedRedrawRequest>,
 ) {
