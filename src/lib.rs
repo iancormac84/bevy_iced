@@ -43,6 +43,7 @@ use bevy_render::{Render, RenderApp, RenderSystems};
 use bevy_winit::WakeUp;
 use cfg_if::cfg_if;
 use iced_core::Theme;
+use iced_graphics::Shell;
 use iced_resource::IcedResource;
 use iced_runtime::user_interface::UserInterface;
 use iced_widget::graphics::Viewport;
@@ -191,6 +192,7 @@ impl IcedProps {
             queue.clone(),
             render::TEXTURE_FMT,
             Some(iced_wgpu::graphics::Antialiasing::MSAAx4),
+            Shell::headless()
         );
 
         for &font in &config.fonts {
