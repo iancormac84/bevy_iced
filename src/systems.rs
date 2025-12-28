@@ -118,6 +118,7 @@ pub fn process_input(
                         modifiers,
                         // NOTE: This is a winit thing we don't get from bevy events
                         location: keyboard::Location::Standard,
+                        repeat: ev.repeat
                     }
                 } else {
                     KeyReleased {

@@ -40,14 +40,12 @@ use bevy_render::prelude::*;
 use bevy_render::render_graph::{RenderGraphExt, ViewNodeRunner};
 use bevy_render::renderer::{RenderAdapter, RenderDevice, RenderQueue, render_system};
 use bevy_render::{Render, RenderApp, RenderSystems};
-use bevy_winit::WakeUp;
 use cfg_if::cfg_if;
 use iced_core::Theme;
 use iced_graphics::Shell;
 use iced_resource::IcedResource;
 use iced_runtime::user_interface::UserInterface;
 use iced_widget::graphics::Viewport;
-pub use redraw_requestor::RedrawRequestVariant;
 use redraw_requestor::{IcedRedrawRequest, RedrawRequestor};
 use render::IcedViewport;
 use std::borrow::Cow;
@@ -73,15 +71,14 @@ pub type Renderer = iced_wgpu::Renderer;
 /// Add this to your [`App`] by calling `app.add_plugin(bevy_iced::IcedPlugin::<Message>::default())`.
 ///
 /// `Message` is the type of of message that is produced by the UI.
-/// `WinitUserEvent` is the UserEvent type for the Winit event loop.
 /// If you are not overriding this type in the `WinitPlugin`, you don't need to set this manually.
-pub struct IcedPlugin<Message, WinitUserEvent = WakeUp> {
+pub struct IcedPlugin<Message> {
     settings: iced::Settings,
     fonts: Vec<&'static [u8]>,
-    _marker: PhantomData<(Message, WinitUserEvent)>,
+    _marker: PhantomData<Message>,
 }
 
-impl<Message, WinitUserEvent> Default for IcedPlugin<Message, WinitUserEvent> {
+impl<Message> Default for IcedPlugin<Message> {
     fn default() -> Self {
         Self {
             settings: Default::default(),
@@ -91,7 +88,7 @@ impl<Message, WinitUserEvent> Default for IcedPlugin<Message, WinitUserEvent> {
     }
 }
 
-impl<Message, WinitUserEvent> IcedPlugin<Message, WinitUserEvent> {
+impl<Message> IcedPlugin<Message> {
     /// Set the Iced settings.
     pub fn settings(mut self, settings: iced::Settings) -> Self {
         self.settings = settings;
@@ -105,7 +102,7 @@ impl<Message, WinitUserEvent> IcedPlugin<Message, WinitUserEvent> {
     }
 }
 
-impl<M: Event + Message, U: RedrawRequestVariant> Plugin for IcedPlugin<M, U> {
+impl<M: Event + Message> Plugin for IcedPlugin<M> {
     fn build(&self, app: &mut App) {
         app.add_plugins(ExtractComponentPlugin::<IcedCamera>::default())
             .add_systems(
@@ -178,7 +175,7 @@ struct IcedProps {
 }
 
 impl IcedProps {
-    fn new<M, U>(app: &App, config: &IcedPlugin<M, U>) -> Self {
+    fn new<M>(app: &App, config: &IcedPlugin<M>) -> Self {
         let render_world = &app.sub_app(RenderApp).world();
         let device = render_world
             .get_resource::<RenderDevice>()
@@ -308,10 +305,9 @@ pub(crate) struct DidDraw(std::sync::atomic::AtomicBool);
 /// `IcedContext<T>` requires an event system to be defined in the [`App`].
 /// Do so by invoking `app.add_event::<T>()` when constructing your App.
 #[derive(SystemParam)]
-pub struct IcedContext<'w, 's, Message, WinitUserEvent = WakeUp>
+pub struct IcedContext<'w, 's, Message>
 where
     Message: bevy_ecs::event::Event + bevy_ecs::message::Message,
-    WinitUserEvent: RedrawRequestVariant,
 {
     viewport: Res<'w, IcedViewport>,
     #[cfg(target_arch = "wasm32")]
@@ -323,13 +319,12 @@ where
     ui: NonSendMut<'w, Option<UserInterface<'static, Message, Theme, Renderer>>>,
     cursor: Res<'w, IcedCursor>,
     message_writer: MessageWriter<'w, Message>,
-    redraw_requestor: RedrawRequestor<'w, 's, WinitUserEvent>,
+    redraw_requestor: RedrawRequestor<'w, 's>,
 }
 
-impl<M, U> IcedContext<'_, '_, M, U>
+impl<M> IcedContext<'_, '_, M>
 where
     M: bevy_ecs::event::Event + bevy_ecs::message::Message,
-    U: RedrawRequestVariant,
 {
     /// Display an [`Element`] to the screen.
     pub fn display(&mut self, element: impl Into<iced_core::Element<'static, M, Theme, Renderer>>) {
