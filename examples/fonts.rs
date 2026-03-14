@@ -8,9 +8,9 @@ use bevy_iced::{
     },
 };
 
-const ALPHAPROTA_FONT: Font = Font::with_name("Alpha Prota");
+const ALPHAPROTA_FONT: Font = Font::new("Alpha Prota");
 const ALPHAPROTA_FONT_BYTES: &[u8] = include_bytes!("../assets/fonts/AlphaProta.ttf");
-const NOTOSANS_REGULAR: iced::Font = iced::Font::with_name("Noto Sans");
+const NOTOSANS_REGULAR: iced::Font = iced::Font::new("Noto Sans");
 const NOTOSANS_REGULAR_BYTES: &[u8] = include_bytes!("../assets/fonts/NotoSans-Regular.ttf");
 
 #[derive(Event, Message)]

@@ -1,21 +1,18 @@
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::prelude::*;
-use bevy_ecs::query::QueryItem;
-use bevy_render::render_graph::{RenderLabel, ViewNode};
+use bevy_render::renderer::ViewQuery;
 use bevy_render::view::ViewTarget;
 use bevy_render::{
     Extract,
-    render_graph::{NodeRunError, RenderGraphContext},
     renderer::RenderContext,
 };
 use bevy_window::prelude::*;
-use cfg_if::cfg_if;
 use iced_core::Size;
 use iced_wgpu::wgpu::TextureFormat;
 use iced_widget::graphics::Viewport;
 
 use crate::systems::IcedCamera;
-use crate::{DidDraw, IcedProps, IcedResource, IcedSettings};
+use crate::{DidDraw, IcedResource, IcedSettings};
 
 pub const TEXTURE_FMT: TextureFormat = TextureFormat::Rgba8UnormSrgb; // must be equal to the format of the iced 2D camera
 
@@ -42,7 +39,7 @@ pub fn update_viewport(
 
 // Same as DidDraw, but as a regular bool instead of an atomic.
 #[derive(Resource, Deref, DerefMut)]
-struct DidDrawBasic(bool);
+pub struct DidDrawBasic(bool);
 
 pub fn extract_iced_data(
     mut commands: Commands,
@@ -62,47 +59,29 @@ pub fn recall_staging_belt(
     iced.lock().renderer.staging_belt_recall();
 }
 
-#[derive(Clone, Hash, Default, Debug, Eq, PartialEq, RenderLabel)]
-pub struct IcedPass;
 
-impl ViewNode for IcedPass {
-    type ViewQuery = (&'static ViewTarget, Has<IcedCamera>);
-    fn run<'w>(
-        &self,
-        _graph: &mut RenderGraphContext,
-        render_context: &mut RenderContext<'w>,
-        (target, is_iced): QueryItem<'w, '_, Self::ViewQuery>,
-        world: &'w World,
-    ) -> Result<(), NodeRunError> {
-        if !is_iced {
-            return Ok(());
-        }
-
-        if !world.get_resource::<DidDrawBasic>().is_some_and(|x| x.0) {
-            return Ok(());
-        }
-
-        let texture_view = target.main_texture_view();
-        let viewport = world.resource::<IcedViewport>();
-
-        cfg_if! {
-            if #[cfg(target_arch = "wasm32")] {
-                let IcedProps {
-                    renderer,
-                    ..
-                } = &mut *world.non_send_resource::<IcedResource>().lock();
-            } else {
-                let IcedProps {
-                    renderer,
-                    ..
-                } = &mut *world.resource::<IcedResource>().lock();
-            }
-        };
-
-        let encoder = renderer.draw(None, texture_view, viewport);
-        render_context.add_command_buffer(encoder.finish());
-        renderer.staging_belt_finish();
-
-        Ok(())
+pub fn iced_render_pass(
+    mut render_context: RenderContext,
+    view: ViewQuery<(&ViewTarget, Has<IcedCamera>)>,
+    did_draw_basic: Option<Res<DidDrawBasic>>,
+    viewport: Res<IcedViewport>,
+    #[cfg(target_arch = "wasm32")] iced_resource: NonSendMut<IcedResource>,
+    #[cfg(not(target_arch = "wasm32"))] iced_resource: ResMut<IcedResource>,
+) {
+    let (view_target, is_iced) = view.into_inner();
+    if !is_iced {
+        return;
     }
+
+    if !did_draw_basic.is_some_and(|x| x.0) {
+        return;
+    }
+
+    let texture_view = view_target.main_texture_view();
+
+    let renderer = &mut iced_resource.lock().renderer;
+
+    let encoder = renderer.draw(None, texture_view, &viewport);
+    render_context.add_command_buffer(encoder.finish());
+    renderer.staging_belt_finish();
 }

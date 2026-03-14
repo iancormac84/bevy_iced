@@ -184,7 +184,6 @@ pub fn iced_update<M: bevy_ecs::event::Event + Message>(
         events.as_slice(),
         **cursor,
         renderer,
-        &mut iced_core::clipboard::Null,
         &mut messages,
     );
     events.clear();

@@ -28,16 +28,15 @@
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
 
-use crate::render::IcedPass;
+use crate::render::iced_render_pass;
 use crate::systems::{IcedCamera, setup_iced_camera};
 use bevy_app::prelude::*;
-use bevy_core_pipeline::core_2d::graph::{Core2d, Node2d};
+use bevy_core_pipeline::{Core2d, Core2dSystems};
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::prelude::*;
 use bevy_ecs::system::SystemParam;
 use bevy_render::extract_component::ExtractComponentPlugin;
 use bevy_render::prelude::*;
-use bevy_render::render_graph::{RenderGraphExt, ViewNodeRunner};
 use bevy_render::renderer::{RenderAdapter, RenderDevice, RenderQueue, render_system};
 use bevy_render::{Render, RenderApp, RenderSystems};
 use cfg_if::cfg_if;
@@ -115,7 +114,7 @@ impl<M: Event + Message> Plugin for IcedPlugin<M> {
             )
             .init_resource::<DidDraw>()
             .init_resource::<IcedSettings>()
-            .insert_non_send_resource::<Option<UserInterface<M, Theme, Renderer>>>(None)
+            .insert_non_send::<Option<UserInterface<M, Theme, Renderer>>>(None)
             .init_resource::<IcedEventQueue>()
             .init_resource::<IcedCursor>()
             .init_resource::<IcedRedrawRequest>()
@@ -123,8 +122,7 @@ impl<M: Event + Message> Plugin for IcedPlugin<M> {
             .configure_sets(Update, IcedProgramSet::View.after(IcedProgramSet::Update));
 
         app.sub_app_mut(RenderApp)
-            .add_render_graph_node::<ViewNodeRunner<IcedPass>>(Core2d, IcedPass)
-            .add_render_graph_edges(Core2d, (Node2d::EndMainPass, IcedPass));
+            .add_systems(Core2d, iced_render_pass.in_set(Core2dSystems::MainPass));
     }
 
     fn finish(&self, app: &mut App) {
@@ -135,7 +133,7 @@ impl<M: Event + Message> Plugin for IcedPlugin<M> {
         app.insert_resource(default_viewport.clone());
         cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
-                app.insert_non_send_resource(iced_resource.clone());
+                app.insert_non_send(iced_resource.clone());
             } else {
                 app.insert_resource(iced_resource.clone());
             }
@@ -153,7 +151,7 @@ impl<M: Event + Message> Plugin for IcedPlugin<M> {
             );
         cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
-                render_app.world_mut().insert_non_send_resource(iced_resource);
+                render_app.world_mut().insert_non_send(iced_resource);
             } else {
                 render_app.world_mut().insert_resource(iced_resource);
             }
@@ -176,7 +174,7 @@ struct IcedProps {
 
 impl IcedProps {
     fn new<M>(app: &App, config: &IcedPlugin<M>) -> Self {
-        let render_world = &app.sub_app(RenderApp).world();
+        let render_world = app.sub_app(RenderApp).world();
         let device = render_world
             .get_resource::<RenderDevice>()
             .unwrap()
@@ -202,8 +200,7 @@ impl IcedProps {
         Self {
             renderer: iced_wgpu::Renderer::new(
                 engine,
-                config.settings.default_font,
-                config.settings.default_text_size,
+                config.settings,
             ),
         }
     }
@@ -352,7 +349,6 @@ where
             events.as_slice(),
             **self.cursor,
             renderer,
-            &mut iced_core::clipboard::Null,
             &mut messages,
         );
         self.redraw_requestor.finish(state);

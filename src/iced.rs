@@ -77,5 +77,4 @@ pub type Renderer = renderer::Renderer;
 pub type Element<'a, Message, Theme = iced_core::Theme, Renderer = crate::Renderer> =
     iced_core::Element<'a, Message, Theme, Renderer>;
 
-pub use iced_core::renderer::Style;
-pub use iced_wgpu::Settings;
+pub use iced_core::renderer::{Settings, Style};

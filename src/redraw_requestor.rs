@@ -26,6 +26,7 @@ impl From<State> for IcedRedrawRequest {
                 redraw_request,
                 input_method: _,
                 mouse_interaction: _,
+                clipboard: _,
                 has_layout_changed: _,
             } => Self(redraw_request),
             State::Outdated => Self(RedrawRequest::Wait),
