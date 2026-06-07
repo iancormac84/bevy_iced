@@ -56,7 +56,7 @@ pub fn recall_staging_belt(
     #[cfg(target_arch = "wasm32")] iced: NonSend<IcedResource>,
     #[cfg(not(target_arch = "wasm32"))] iced: Res<IcedResource>,
 ) {
-    iced.lock().renderer.staging_belt_recall();
+    iced.lock().renderer.recall();
 }
 
 
@@ -83,5 +83,5 @@ pub fn iced_render_pass(
 
     let encoder = renderer.draw(None, texture_view, &viewport);
     render_context.add_command_buffer(encoder.finish());
-    renderer.staging_belt_finish();
+    renderer.finish();
 }

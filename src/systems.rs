@@ -10,7 +10,7 @@ use bevy_input::{
     mouse::{MouseButtonInput, MouseWheel},
 };
 use bevy_render::extract_component::ExtractComponent;
-use bevy_window::prelude::*;
+use bevy_window::{RawHandleWrapper, prelude::*};
 use bevy_window::{PrimaryWindow, WindowFocused};
 use iced_core::window::Event as IcedWindowEvent;
 use iced_core::{
@@ -153,7 +153,7 @@ pub fn process_input(
 pub struct IcedCursor(Cursor);
 
 pub fn iced_update<M: bevy_ecs::event::Event + Message>(
-    (viewport, windows): (Res<IcedViewport>, Query<&mut Window, With<PrimaryWindow>>),
+    (viewport, windows_and_window_handles): (Res<IcedViewport>, Query<(&mut Window, &RawHandleWrapper), With<PrimaryWindow>>),
     #[cfg(target_arch = "wasm32")] props: NonSend<IcedResource>,
     #[cfg(not(target_arch = "wasm32"))] props: Res<IcedResource>,
     (mut events, touches): (ResMut<IcedEventQueue>, Res<Touches>),
@@ -166,8 +166,9 @@ pub fn iced_update<M: bevy_ecs::event::Event + Message>(
     let &mut IcedProps {
         ref mut renderer, ..
     } = &mut *props.lock();
+    let window_and_window_handle = windows_and_window_handles.single().unwrap();
+    let window = window_and_window_handle.0;
     *cursor = IcedCursor({
-        let window = windows.single().unwrap();
         match window.cursor_position() {
             Some(position) => {
                 Cursor::Available(utils::process_cursor_position(position, bounds, window))
@@ -181,6 +182,7 @@ pub fn iced_update<M: bevy_ecs::event::Event + Message>(
 
     let mut messages = Vec::<M>::new();
     let (state, _event_statuses) = ui.update(
+        unsafe { &window_and_window_handle.1.get_handle() as &dyn iced_core::Window }, // TODO: The type returned by get_handle doesn't implement Debug, thus the no compile
         events.as_slice(),
         **cursor,
         renderer,
